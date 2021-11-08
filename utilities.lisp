@@ -9,7 +9,8 @@
     (gp:register-image-translation (intern (string-upcase (pathname-name path)) :keyword)
                                    (gp:read-external-image path))))
 
-(mapc #'load-external-image (directory (current-pathname "img/*.png")))
+(mapc 'load-external-image
+      (directory (asdf:system-relative-pathname "parachute-browser" "img/*.png")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Toolbar Support
