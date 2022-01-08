@@ -14,6 +14,7 @@
               :alternating-background t
               :callback-type :interface
               :action-callback (rcurry 'browser-toolbar-callback :pb-run-tests)
+              :alternative-action-callback (rcurry 'browser-toolbar-callback :pb-find-source)
               :selection-callback :redisplay-interface
               :retract-callback :redisplay-interface
               :interaction :extended-selection)
@@ -33,7 +34,8 @@
 (define-toolbar (browser-toolbar 'browser-toolbar-callback)
   (:name :pb-run-tests :text "Run")
   (:name :pb-results :text "Results")
-  (:name :pb-refresh :text "Refresh"))
+  (:name :pb-refresh :text "Refresh")
+  (:name :pb-find-source :text "Source"))
 
 ;;; Tree Callbacks
 
@@ -63,6 +65,9 @@
 (defmethod toolbar-item-enabled-p ((interface test-browser) (name (eql :pb-run-tests)))
   (choice-selected-items (browser-tree interface)))
 
+(defmethod toolbar-item-enabled-p ((interface test-browser) (name (eql :pb-find-source)))
+  (choice-selected-items (browser-tree interface)))
+
 (defmethod browser-toolbar-callback ((interface test-browser) (name (eql :pb-refresh)))
   (setf (tree-view-roots (browser-tree interface)) (parachute:test-packages)))
 
@@ -75,3 +80,8 @@
   "run selected tests on a background process, returning results to the current process"
   (when-let (selected (choice-selected-items (browser-tree interface)))
     (execute-tests-in-background selected)))
+
+(defmethod browser-toolbar-callback ((interface test-browser) (name (eql :pb-find-source)))
+  "attempt to find source definition for selected item"
+  (when-let (selected (first (choice-selected-items (browser-tree interface))))
+    (find-source-for-item selected)))

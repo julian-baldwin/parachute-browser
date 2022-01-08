@@ -137,8 +137,40 @@ based on the underlying test hierarchy"
       (values (find-roots node-table) node-table))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Source Navigation
+
+(defgeneric find-source-for-item (datum)
+  (:documentation "Attempt to open the source for DATUM in an editor.")
+  (:method (datum) (capi:display-message "Don't know how to find source for ~A." datum))
+  (:method ((datum null)) (values)))
+
+(defmethod find-source-for-item ((datum package))
+  (editor:find-source-command nil (package-name datum)))
+
+(defmethod find-source-for-item ((datum parachute:test))
+  (let ((dspec `(parachute-browser:define-test ,(parachute:name datum))))
+    (if (dspec:find-dspec-locations dspec)
+        (editor:find-source-for-dspec-command nil dspec)
+        (display-message "Unable to find source for ~A. Check it was defined with Parachute Browser's DEFINE-TEST macro."
+                         (parachute:name datum)))))
+
+(dspec:define-dspec-class define-test nil "Defined a Parachute test.")
+
+(defmacro define-test (name &body body)
+  "Wrap PARACHUTE:DEFINE-TEST around a Dspec to allow source navigation with the LW editor."
+  (let ((test-name (if (listp name) (second name) name)))
+    `(dspec:def (define-test ,test-name)
+       (when (record-definition `(define-test ,',test-name) (dspec:location))
+         (parachute:define-test ,name ,@body)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Convenience Functions
 
 (defun browse-tests ()
   "open a parachute test browser"
   (find-interface 'test-browser))
+
+(defun load-examples ()
+  "load the example tests shipped with Parachute Browser"
+  (load (asdf:system-relative-pathname "parachute-browser" "example-tests.lisp"))
+  (browse-tests))

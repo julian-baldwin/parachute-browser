@@ -75,7 +75,11 @@
                 :retract-callback :redisplay-interface
                 :callback-type :interface-data
                 :action-callback 'result-viewer-inspect-result
-                :alternating-background t)
+                :alternating-background t
+                :alternative-action-callback
+                (lambda (interface data)
+                  (declare (ignore data))
+                  (result-viewer-toolbar-callback interface :pb-find-source)))
    (status-line title-pane
                 :reader result-viewer-status-line)
    (icons-copyright title-pane
@@ -97,6 +101,7 @@
 
 (define-toolbar (result-viewer-toolbar 'result-viewer-toolbar-callback)
   (:name :pb-run-tests :text "Run Again")
+  (:name :pb-find-source :text "Source")
   (:name :pb-browser :text "Browser" :callback 'find-interface
    :callback-type :data :data 'test-browser))
 
@@ -118,6 +123,18 @@
                                             (or (choice-selected-items result-tree)
                                                 (tree-view-roots result-tree)))))
       (execute-tests-in-background selected))))
+
+(defmethod result-viewer-toolbar-callback ((interface result-viewer) (name (eql :pb-find-source)))
+  "Find the source for the first selected result."
+  (if-let (result (find 'result-node
+                        (choice-selected-items (result-viewer-tree interface))
+                        :key 'type-of))
+      (find-source-for-item (result-node-test result))
+    (display-message "Unable to locate source for this result. Try the parent result instead.")))
+
+(defmethod toolbar-item-enabled-p ((interface result-viewer) (name (eql :pb-find-source)))
+  (typep (first (choice-selected-items (result-viewer-tree interface)))
+         'result-node))
 
 ;;; Tree Display & Filtering
 

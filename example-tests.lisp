@@ -30,3 +30,11 @@
         doing (if (= 0 (mod i 3))
                   (skip "skipped this bit" (false t))
                   (true (evenp i) "checking if ~A is even" i))))
+
+;; These tests should be accessible by 'Command+Double Click' from the test
+;; and results browser.
+
+(parachute-browser:define-test findable-tests)
+
+(parachute-browser:define-test test-something-findable :parent findable-tests
+  (is equal 1 1))

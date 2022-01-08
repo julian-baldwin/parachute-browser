@@ -50,10 +50,23 @@ Or for a local installation, assuming ASDF knows where to find it:
 
 A set of example tests (with intentional failures) is available in the file `example-tests.lisp`:
 
-    CL-USER 1> (load (asdf:system-relative-pathname (asdf:find-system "parachute-browser")
-                                                    "example-tests.lisp"))
+    CL-USER 1> (parachute-browser:load-examples)
 
 ## Features
+
+### NEW: Source Navigation
+
+Define your tests using `PARACHUTE-BROWSER:DEFINE-TEST` which is a thin wrapper over Parachute's
+underlying `DEFINE-TEST`. This leverages LispWorks' underlying Dspec infrastructure to record the
+source location of test definitions. You may then navigate to a test by selecting it in either the
+browser or result viewer and clicking the `Source` button in the toolbar. You may also navigate to
+the test by using the alternate action for your platform (on Mac, this is holding down the Command
+key while double-clicking the list item). You can also navigate to the package definition from the
+test browser interface.
+
+Caveats: `PARACHUTE-BROWSER:DEFINE-TEST` is the only definer currently implemented. Source
+navigation to individual assertions or tests defined with Parachute's native `DEFINE-TEST` is not
+currently possible without modifying Parachute itself.
 
 ### Test Browser
 
