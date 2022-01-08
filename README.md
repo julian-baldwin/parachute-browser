@@ -31,17 +31,27 @@ interface.
 
 ## Requirements
 
-- LispWorks (developed on LW 7.1.3 Mac)
+- LispWorks (tested on LW 8.0 Mac and LW 7.1.3 Mac)
 - **[Alexandria](https://common-lisp.net/project/alexandria/)**
 - **[Parachute](https://github.com/Shinmera/parachute)**
 
 ## Getting Started
 
-    ;; ensure Alexandria and Parachute loaded however makes sense for your use case.
+Parachute Browser is available from **[Ultralisp](https://ultralisp.org/dists/lispworks)** in the
+`lispworks` distribution:
+
+    CL-USER 1> (ql:quickload "parachute-browser")
+
+Or for a local installation, assuming ASDF knows where to find it:
+
     ;; define your tests in whatever manner you see fit - see example-tests.lisp
-    CL-USER 1 > (load "defsys.lisp")
-    CL-USER 2 > (compile-system "parachute-browser" :load t)
-    CL-USER 3 > (parachute-browser:browse-tests)
+    CL-USER 1 > (asdf:load-system "parachute-browser")
+    CL-USER 2 > (parachute-browser:browse-tests)
+
+A set of example tests (with intentional failures) is available in the file `example-tests.lisp`:
+
+    CL-USER 1> (load (asdf:system-relative-pathname (asdf:find-system "parachute-browser")
+                                                    "example-tests.lisp"))
 
 ## Features
 
@@ -98,4 +108,5 @@ display the result viewer.
 Probably innumerable.
 
 It may be nice to hook into Parachute's test definition process to automatically update the browser
-as tests are defined and redefined.
+as tests are defined and redefined, as well as extend this to support multiple testing frameworks,
+although realistically this probably would require a rewrite.
