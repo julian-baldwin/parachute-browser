@@ -70,23 +70,43 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Test Execution
 
-(defun execute-tests-in-background-func (tests result-process)
+(defvar *automatic-refresh* nil "Automatically refresh test browser on definition.")
+(defvar *automatic-execute* nil "Automatically execute tests on definition.")
+
+(defun toggle-automatic-behaviour (&key (refresh (not *automatic-refresh*))
+                                        (execute (not *automatic-execute*)))
+  "Toggle the automatic behaviour flags."
+  (list :refresh (setf *automatic-refresh* refresh)
+        :execute (setf *automatic-execute* execute)))
+
+(defun background-execute-results-handler (report automatic)
+  "Handle results received from the background execution process."
+  ;; If AUTOMATIC is true these tests were executed via automatic execution, therefore don't
+  ;; focus the results window, to avoid having to click back to the editor after compiling.
+  (when-let (results (or (locate-interface 'result-viewer :report report)
+                         (and (not automatic)
+                              (find-interface 'result-viewer :report report))))
+    (unless automatic
+      (raise-interface results))))
+
+(defun execute-tests-in-background-func (tests result-process automatic)
   "background test execution function"
   (mp:process-send result-process
-                   (list 'find-interface
-                         'result-viewer
-                         :report
-                         (parachute:test tests :report 'parachute:quiet))))
+                   (list 'background-execute-results-handler
+                         (parachute:test tests :report 'parachute:quiet)
+                         automatic)))
 
 (defun execute-tests-in-background (tests
                                     &key (result-process #-:cocoa (mp:get-current-process)
-                                                         #+:cocoa mp:*main-process*))
+                                                         #+:cocoa mp:*main-process*)
+                                    automatic)
   "execute list of test designators, delivering report to a RESULT-VIEWER in RESULT-PROCESS"
   (mp:process-run-function "parachute background tests"
-                             '(:internal-server t)
-                             'execute-tests-in-background-func
-                             tests
-                             result-process))
+                           '(:internal-server t)
+                           'execute-tests-in-background-func
+                           tests
+                           result-process
+                           automatic))
 
 (defun brief-summary (report)
   "generate a simple one line summary for a parachute report"
@@ -159,9 +179,18 @@ based on the underlying test hierarchy"
 (defmacro define-test (name &body body)
   "Wrap PARACHUTE:DEFINE-TEST around a Dspec to allow source navigation with the LW editor."
   (let ((test-name (if (listp name) (second name) name)))
-    `(dspec:def (define-test ,test-name)
-       (when (record-definition `(define-test ,',test-name) (dspec:location))
-         (parachute:define-test ,name ,@body)))))
+    `(eval-when (:load-toplevel :execute)
+       (dspec:def (define-test ,test-name)
+         (when (record-definition `(define-test ,',test-name) (dspec:location))
+           (prog1
+               (parachute:define-test ,name ,@body)
+             (when-let (browser (and *automatic-refresh* (locate-interface 'test-browser)))
+               (execute-with-interface-if-alive browser
+                                                'browser-toolbar-callback
+                                                browser
+                                                :pb-refresh))
+             (when *automatic-execute*
+               (execute-tests-in-background ',test-name :automatic t))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Convenience Functions

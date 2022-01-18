@@ -54,7 +54,26 @@ A set of example tests (with intentional failures) is available in the file `exa
 
 ## Features
 
-### NEW: Source Navigation
+### NEW: Automatic Refresh & Execute!
+
+You can now automatically refresh the test browser when defining a test using the
+`PARACHUTE-BROWSER:DEFINE-TEST` macro. To see this, set `PARACHUTE-BROWSER:*AUTOMATIC-REFRESH*` to a
+true value and use the editor command `Compile Defun` to compile and evaluate a test. If you have a
+test browser interface open it will be refreshed automatically.
+
+Tests defined with `PARACHUTE-BROWSER:DEFINE-TEST` can now be automatically executed when defined.
+To enable this, set `PARACHUTE-BROWSER:*AUTOMATIC-EXECUTE*` to a true value and evaluate a test
+form. If you have an existing result viewer open, you will see it update with the results of the
+test, although the interface won't receive focus (to avoid breaking your workflow by having to
+switch back to the editor window to continue writing code). Automatic execute _only_ works with an
+existing result viewer, so make sure there's one open if you don't see results. Running tests from
+the test browser will always display and focus a result viewer.
+
+These features are really designed for interactive development in the LispWorks IDE rather than
+running a full test suite. A helper function `PARACHUTE-BROWSER:TOGGLE-AUTOMATIC-BEHAVIOUR` is
+available to quickly turn them on or off as needed.
+
+### LESS NEW: Source Navigation
 
 Define your tests using `PARACHUTE-BROWSER:DEFINE-TEST` which is a thin wrapper over Parachute's
 underlying `DEFINE-TEST`. This leverages LispWorks' underlying Dspec infrastructure to record the
@@ -120,6 +139,6 @@ display the result viewer.
 
 Probably innumerable.
 
-It may be nice to hook into Parachute's test definition process to automatically update the browser
-as tests are defined and redefined, as well as extend this to support multiple testing frameworks,
-although realistically this probably would require a rewrite.
+Supporting multiple testing frameworks might be useful, although Parachute is pretty deeply
+ingrained in the codebase. Realistically this would probably require a rewrite to get the underlying
+architecture sorted out.
