@@ -173,7 +173,7 @@
                        (or (result-node-children node)
                            (parachute:results (result-node-result node)))))
 
-(defmethod result-viewer-children ((interface result-viewer) (result parachute:value-result))
+(defmethod result-viewer-children ((interface result-viewer) (result parachute:result))
   nil)
 
 (defmethod result-viewer-children ((interface result-viewer) (result parachute:parent-result))
