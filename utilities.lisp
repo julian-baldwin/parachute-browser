@@ -67,6 +67,9 @@
 (defmethod redisplay-interface :after ((interface parachute-window))
   (interface-update-toolbar interface))
 
+(defmethod lispworks-tools::get-toolbar-items ((instance parachute-window))
+  (slot-value instance 'capi::toolbar-items))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Test Execution
 

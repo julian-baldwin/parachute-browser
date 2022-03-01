@@ -3,7 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Test Browser
 
-(define-interface test-browser (parachute-window) ()
+(define-interface test-browser (parachute-window lispworks-tools:lispworks-interface) ()
   (:panes
    (test-tree extended-selection-tree-view
               :reader browser-tree
@@ -29,7 +29,9 @@
                 :internal-border 5))
   (:default-initargs
    :title "Parachute Test Browser"
-   :toolbar-items (browser-toolbar)))
+   :toolbar-items (browser-toolbar)
+   :default-toolbar-states
+   '(:visible (:pb-run-tests :pb-results :pb-refresh :pb-find-source))))
 
 (define-toolbar (browser-toolbar 'browser-toolbar-callback)
   (:name :pb-run-tests :text "Run")
