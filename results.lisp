@@ -101,6 +101,7 @@
 
 (define-toolbar (result-viewer-toolbar 'result-viewer-toolbar-callback)
   (:name :pb-run-tests :text "Run Again")
+  (:name :pb-debug :text "Debug")
   (:name :pb-find-source :text "Source")
   (:name :pb-browser :text "Browser" :callback 'find-interface
    :callback-type :data :data 'test-browser))
@@ -115,24 +116,36 @@
 
 ;;; Toolbar Callbacks
 
-(defmethod result-viewer-toolbar-callback ((interface result-viewer) (name (eql :pb-run-tests)))
+(defun result-viewer-selected-tests (interface)
+  "Return a list of the selected tests in the result viewer or all items."
   (with-slots (result-tree) interface
-    (when-let (selected (delete nil (mapcar (lambda (item)
-                                              (when (typep item 'result-node)
-                                                (result-node-test item)))
-                                            (or (choice-selected-items result-tree)
-                                                (tree-view-roots result-tree)))))
-      (execute-tests-in-background selected))))
+    (delete nil (mapcar (lambda (item)
+                          (when (typep item 'result-node)
+                            (result-node-test item)))
+                        (or (choice-selected-items result-tree)
+                            (tree-view-roots result-tree))))))
+
+(defmethod result-viewer-toolbar-callback ((interface result-viewer) (name (eql :pb-run-tests)))
+  (when-let (selected (result-viewer-selected-tests interface))
+    (execute-tests-in-background selected)))
+
+(defmethod result-viewer-toolbar-callback ((interface result-viewer) (name (eql :pb-debug)))
+  (when-let (selected (result-viewer-selected-tests interface))
+    (execute-tests-in-background selected :debug t)))
 
 (defmethod result-viewer-toolbar-callback ((interface result-viewer) (name (eql :pb-find-source)))
   "Find the source for the first selected result."
   (if-let (result (find 'result-node
                         (choice-selected-items (result-viewer-tree interface))
                         :key 'type-of))
-      (find-source-for-item (result-node-test result))
-    (display-message "Unable to locate source for this result. Try the parent result instead.")))
+          (find-source-for-item (result-node-test result))
+          (display-message "Unable to locate source for this result. Try the parent result instead.")))
 
 (defmethod toolbar-item-enabled-p ((interface result-viewer) (name (eql :pb-find-source)))
+  (typep (first (choice-selected-items (result-viewer-tree interface)))
+         'result-node))
+
+(defmethod toolbar-item-enabled-p ((interface result-viewer) (name (eql :pb-debug)))
   (typep (first (choice-selected-items (result-viewer-tree interface)))
          'result-node))
 

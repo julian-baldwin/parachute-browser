@@ -54,7 +54,15 @@ A set of example tests (with intentional failures) is available in the file `exa
 
 ## Features
 
-### NEW: Automatic Refresh & Execute!
+### NEW: Debug Tests
+
+You can now run one or more tests interactively where failures enter the debugger rather than fail
+the test outright. This works similarly to the Run/Run Again buttons: select one or more tests
+and click the Debug button in the toolbar to run them using the `PARACHUTE:INTERACTIVE` report,
+which allows errors to bubble up and invoke the debugger. Tests are still executed in a background
+process, so entering the debugger will not block the user interface.
+
+### LESS NEW: Automatic Refresh & Execute!
 
 You can now automatically refresh the test browser when defining a test using the
 `PARACHUTE-BROWSER:DEFINE-TEST` macro. To see this, set `PARACHUTE-BROWSER:*AUTOMATIC-REFRESH*` to a
@@ -73,7 +81,7 @@ These features are really designed for interactive development in the LispWorks 
 running a full test suite. A helper function `PARACHUTE-BROWSER:TOGGLE-AUTOMATIC-BEHAVIOUR` is
 available to quickly turn them on or off as needed.
 
-### LESS NEW: Source Navigation
+### Source Navigation
 
 Define your tests using `PARACHUTE-BROWSER:DEFINE-TEST` which is a thin wrapper over Parachute's
 underlying `DEFINE-TEST`. This leverages LispWorks' underlying Dspec infrastructure to record the

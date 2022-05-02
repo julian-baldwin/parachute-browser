@@ -31,10 +31,11 @@
    :title "Parachute Test Browser"
    :toolbar-items (browser-toolbar)
    :default-toolbar-states
-   '(:visible (:pb-run-tests :pb-results :pb-refresh :pb-find-source))))
+   '(:visible (:pb-run-tests :pb-debug :pb-results :pb-refresh :pb-find-source))))
 
 (define-toolbar (browser-toolbar 'browser-toolbar-callback)
   (:name :pb-run-tests :text "Run")
+  (:name :pb-debug :text "Debug")
   (:name :pb-results :text "Results")
   (:name :pb-refresh :text "Refresh")
   (:name :pb-find-source :text "Source"))
@@ -67,6 +68,9 @@
 (defmethod toolbar-item-enabled-p ((interface test-browser) (name (eql :pb-run-tests)))
   (choice-selected-items (browser-tree interface)))
 
+(defmethod toolbar-item-enabled-p ((interface test-browser) (name (eql :pb-debug)))
+  (choice-selected-items (browser-tree interface)))
+
 (defmethod toolbar-item-enabled-p ((interface test-browser) (name (eql :pb-find-source)))
   (choice-selected-items (browser-tree interface)))
 
@@ -82,6 +86,11 @@
   "run selected tests on a background process, returning results to the current process"
   (when-let (selected (choice-selected-items (browser-tree interface)))
     (execute-tests-in-background selected)))
+
+(defmethod browser-toolbar-callback ((interface test-browser) (name (eql :pb-debug)))
+  "run selected tests on a background process using debugging."
+  (when-let (selected (choice-selected-items (browser-tree interface)))
+    (execute-tests-in-background selected :debug t)))
 
 (defmethod browser-toolbar-callback ((interface test-browser) (name (eql :pb-find-source)))
   "attempt to find source definition for selected item"

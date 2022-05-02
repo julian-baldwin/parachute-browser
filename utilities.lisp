@@ -92,24 +92,29 @@
     (unless automatic
       (raise-interface results))))
 
-(defun execute-tests-in-background-func (tests result-process automatic)
+(defun execute-tests-in-background-func (tests result-process &key automatic debug)
   "background test execution function"
   (mp:process-send result-process
                    (list 'background-execute-results-handler
-                         (parachute:test tests :report 'parachute:quiet)
+                         (parachute:test tests
+                                         :report
+                                         (if debug
+                                             'parachute:interactive
+                                             'parachute:quiet))
                          automatic)))
 
 (defun execute-tests-in-background (tests
                                     &key (result-process #-:cocoa (mp:get-current-process)
                                                          #+:cocoa mp:*main-process*)
-                                    automatic)
+                                    automatic debug)
   "execute list of test designators, delivering report to a RESULT-VIEWER in RESULT-PROCESS"
   (mp:process-run-function "parachute background tests"
                            '(:internal-server t)
                            'execute-tests-in-background-func
                            tests
                            result-process
-                           automatic))
+                           :automatic automatic
+                           :debug debug))
 
 (defun brief-summary (report)
   "generate a simple one line summary for a parachute report"
@@ -155,7 +160,7 @@ based on the underlying test hierarchy"
              (find-roots (nodes)
                (loop for node being the hash-values of nodes
                      when (and node (null (result-node-parent node)))
-                     collect node)))
+                       collect node)))
       (map nil #'process-result results)
       (values (find-roots node-table) node-table))))
 
