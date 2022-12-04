@@ -31,14 +31,15 @@
    :title "Parachute Test Browser"
    :toolbar-items (browser-toolbar)
    :default-toolbar-states
-   '(:visible (:pb-run-tests :pb-debug :pb-results :pb-refresh :pb-find-source))))
+   '(:visible (:pb-run-tests :pb-debug :pb-results :pb-refresh :pb-find-source :pb-automatic))))
 
 (define-toolbar (browser-toolbar 'browser-toolbar-callback)
   (:name :pb-run-tests :text "Run")
   (:name :pb-debug :text "Debug")
   (:name :pb-results :text "Results")
   (:name :pb-refresh :text "Refresh")
-  (:name :pb-find-source :text "Source"))
+  (:name :pb-find-source :text "Source")
+  (:name :pb-automatic :text "Automatic"))
 
 ;;; Tree Callbacks
 
@@ -96,3 +97,12 @@
   "attempt to find source definition for selected item"
   (when-let (selected (first (choice-selected-items (browser-tree interface))))
     (find-source-for-item selected)))
+
+(defmethod browser-toolbar-callback (interface (name (eql :pb-automatic)))
+  "Toggle the automatic behaviour flags and display a message indicating state."
+  (toggle-automatic-behaviour)
+  (display-non-focus-message (format nil
+                                     "Refresh: ~A Execute: ~A "
+                                     *automatic-refresh*
+                                     *automatic-execute*)
+                             :owner interface))

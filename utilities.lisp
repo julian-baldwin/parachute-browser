@@ -94,14 +94,15 @@
 
 (defun execute-tests-in-background-func (tests result-process &key automatic debug)
   "background test execution function"
-  (mp:process-send result-process
-                   (list 'background-execute-results-handler
-                         (parachute:test tests
-                                         :report
-                                         (if debug
-                                             'parachute:interactive
+  (with-simple-restart (abort-all-tests "Abort all tests")
+    (mp:process-send result-process
+                     (list 'background-execute-results-handler
+                           (parachute:test tests
+                                           :report
+                                           (if debug
+                                               'parachute:interactive
                                              'parachute:quiet))
-                         automatic)))
+                           automatic))))
 
 (defun execute-tests-in-background (tests
                                     &key (result-process #-:cocoa (mp:get-current-process)
@@ -211,3 +212,22 @@ based on the underlying test hierarchy"
   "load the example tests shipped with Parachute Browser"
   (load (asdf:system-relative-pathname "parachute-browser" "example-tests.lisp"))
   (browse-tests))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Test Helpers
+
+(defmacro pass-test (&rest reason)
+  `(parachute:eval-in-context
+    parachute:*context*
+    (make-instance 'parachute:result
+                   :expression 'explicitly-passed
+                   :status :passed
+                   :description (format nil ,@reason))))
+
+(defmacro fail-test (&rest reason)
+  `(parachute:eval-in-context
+    parachute:*context*
+    (make-instance 'parachute:result
+                   :expression 'explicitly-failed
+                   :status :failed
+                   :description (format nil ,@reason))))

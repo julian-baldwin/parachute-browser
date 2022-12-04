@@ -104,7 +104,8 @@
   (:name :pb-debug :text "Debug")
   (:name :pb-find-source :text "Source")
   (:name :pb-browser :text "Browser" :callback 'find-interface
-   :callback-type :data :data 'test-browser))
+   :callback-type :data :data 'test-browser)
+  (:name :pb-automatic :text "Automatic" :callback 'browser-toolbar-callback))
 
 (defmethod reinitialize-interface ((interface result-viewer)
                                    &rest initargs &key report &allow-other-keys)
