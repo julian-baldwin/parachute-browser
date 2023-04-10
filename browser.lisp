@@ -7,7 +7,7 @@
   (:panes
    (test-tree extended-selection-tree-view
               :reader browser-tree
-              :roots (parachute:test-packages)
+              :roots (test-packages)
               :children-function 'browser-tree-children
               :print-function 'browser-tree-print
               :image-function 'browser-tree-image
@@ -40,6 +40,12 @@
   (:name :pb-refresh :text "Refresh")
   (:name :pb-find-source :text "Source")
   (:name :pb-automatic :text "Automatic"))
+
+(defun test-packages ()
+  "Return a list of test packages, sorted by packaged name."
+  (sort (copy-list (parachute:test-packages))
+        #'string<
+        :key #'package-name))
 
 ;;; Tree Callbacks
 
