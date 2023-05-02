@@ -59,10 +59,10 @@
   (parachute:children test))
 
 (defmethod browser-tree-print ((item package))
-  (package-name item))
+  (string-downcase (package-name item)))
 
 (defmethod browser-tree-print ((item parachute:test))
-  (princ-to-string (parachute:name item)))
+  (string-downcase (princ-to-string (parachute:name item))))
 
 (defmethod browser-tree-image ((item package))
   :pb-package)

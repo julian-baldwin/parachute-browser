@@ -194,7 +194,7 @@
   (apply-result-filter interface (parachute:results result)))
 
 (defmethod result-viewer-print ((node result-node))
-  (princ-to-string (parachute:name (result-node-test node))))
+  (string-downcase (princ-to-string (parachute:name (result-node-test node)))))
 
 (defmethod result-viewer-print ((node parachute:result))
   (parachute:format-result node :oneline))
