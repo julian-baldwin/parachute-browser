@@ -73,6 +73,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Test Execution
 
+(defvar *background-timeout* 60 "Timeout (seconds) for background test execution.")
 (defvar *automatic-refresh* nil "Automatically refresh test browser on definition.")
 (defvar *automatic-execute* nil "Automatically execute tests on definition.")
 
@@ -92,7 +93,7 @@
     (unless automatic
       (raise-interface results))))
 
-(defun execute-tests-in-background-func (tests result-process &key automatic debug)
+(defun background-execution (tests result-process &key automatic debug)
   "background test execution function"
   (with-simple-restart (abort-all-tests "Abort all tests")
     (mp:process-send result-process
@@ -104,14 +105,40 @@
                                              'parachute:quiet))
                            automatic))))
 
+(defun execute-tests-in-background-with-timeout (&rest args)
+  "Execute tests in the background waiting for a maximum *background-timeout*
+seconds before timing out. If tests time out, signal an error with useful
+restarts to terminate the test process or continue waiting."
+  (loop with timeout = *background-timeout*
+        with test-process = (apply #'mp:process-run-function
+                                   "real background tests"
+                                   '(:internal-server t)
+                                   'background-execution
+                                   args)
+        for finished = (mp:process-join test-process :timeout timeout)
+        until finished
+        when (not finished)
+          do (restart-case
+                 (error "Background tests failed to finish after ~A second~:P." timeout)
+               (continue ()
+                 :report (list "Continue waiting another ~A second~:P." timeout)
+                 (values))
+               (terminate ()
+                 :report (list "Kill it and wait 5 seconds for it to die.")
+                 (mp:process-kill test-process)
+                 (setf timeout 5)))))
+
 (defun execute-tests-in-background (tests
                                     &key (result-process #-:cocoa (mp:get-current-process)
                                                          #+:cocoa mp:*main-process*)
                                     automatic debug)
   "execute list of test designators, delivering report to a RESULT-VIEWER in RESULT-PROCESS"
-  (mp:process-run-function "parachute background tests"
+  (mp:process-run-function "background tests"
                            '(:internal-server t)
-                           'execute-tests-in-background-func
+                           (if (and (numberp *background-timeout*)
+                                    (plusp *background-timeout*))
+                               'execute-tests-in-background-with-timeout
+                             'background-execution)
                            tests
                            result-process
                            :automatic automatic

@@ -31,7 +31,7 @@ interface.
 
 ## Requirements
 
-- LispWorks (tested on LW 8.0 Mac and LW 7.1.3 Mac)
+- LispWorks (tested on LW 8.0.1 Mac and LW 7.1.3 Mac)
 - **[Alexandria](https://common-lisp.net/project/alexandria/)**
 - **[Parachute](https://github.com/Shinmera/parachute)**
 
@@ -54,7 +54,23 @@ A set of example tests (with intentional failures) is available in the file `exa
 
 ## Features
 
-### NEW: Debug Tests
+### NEW: Background Timeout
+
+Failure of background tests to complete within a timeout is now reported in the LispWorks IDE. This
+is controlled by the `PARACHUTE-BROWSER:*BACKGROUND-TIMEOUT*` special, which is the number of
+seconds to wait for tests to finish. If the tests have not completed when the timeout elapses a
+monitor process will signal an error with some useful restarts that allow you to kill the test
+process or continue waiting.
+
+![Background Timeout](./docimg/timeout.png)
+
+I've implemented this more to provide a notification that a test has failed to terminate.
+Occasionally a test can end up stuck in an infinite loop that never runs out of stack due to TCO,
+deadlocked, waiting for a network request, etc. This feature alerts you to the fact your tests
+haven't finished. The default timeout is 60 seconds; this behaviour can be disabled by setting it
+to `NIL`.
+
+### LESS NEW: Debug Tests
 
 You can now run one or more tests interactively where failures enter the debugger rather than fail
 the test outright. This works similarly to the Run/Run Again buttons: select one or more tests
@@ -62,7 +78,7 @@ and click the Debug button in the toolbar to run them using the `PARACHUTE:INTER
 which allows errors to bubble up and invoke the debugger. Tests are still executed in a background
 process, so entering the debugger will not block the user interface.
 
-### LESS NEW: Automatic Refresh & Execute!
+### Automatic Refresh & Execute
 
 You can now automatically refresh the test browser when defining a test using the
 `PARACHUTE-BROWSER:DEFINE-TEST` macro. To see this, set `PARACHUTE-BROWSER:*AUTOMATIC-REFRESH*` to a

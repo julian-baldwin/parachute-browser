@@ -8,4 +8,5 @@
            #:load-examples #:define-test
            #:fail-test #:pass-test
            #:abort-all-tests
+           #:*background-timeout*
            #:*automatic-refresh* #:*automatic-execute* #:toggle-automatic-behaviour))
